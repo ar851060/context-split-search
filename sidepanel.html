@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+    #content-frame {
+      flex: 1;
+      border: none;
+      width: 100%;
+      height: 100%;
+    }
+    .ratio-controls {
+      padding: 8px 12px;
+      background: #f9f9f9;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .ratio-label {
+      font-weight: 600;
+      color: #444;
+      white-space: nowrap;
+    }
+    #ratio-display {
+      font-weight: normal;
+      color: #666;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex: 1;
+      color: #666;
+    }
+    #splitRatio {
+      flex: 1;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <iframe id="content-frame" src="about:blank"></iframe>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

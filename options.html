@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Extension Options</title>
+  <style>
+    body {
+      padding: 20px;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      width: 320px;
+    }
+    h2 {
+      margin-top: 0;
+      color: #333;
+    }
+    .option-group {
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #eee;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+    input[type="radio"] {
+      margin-right: 10px;
+    }
+    .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    input[type="range"] {
+        flex-grow: 1;
+    }
+    select, input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+    #custom-url-group {
+        display: none;
+        margin-top: 10px;
+    }
+    .warning {
+        color: #d93025;
+        font-size: 12px;
+        margin-top: 5px;
+        background-color: #fce8e6;
+        padding: 8px;
+        border-radius: 4px;
+    }
+    #status {
+      margin-top: 10px;
+      padding: 5px;
+      color: green;
+      font-weight: bold;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    button {
+      background-color: #4285f4;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #357ae8;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Settings</h2>
+
+  <!-- Open Mode -->
+  <div class="option-group">
+    <div style="margin-bottom: 10px; font-weight: bold;">Open Mode</div>
+    <label>
+      <input type="radio" name="openMode" value="split">
+      Split Screen
+    </label>
+    <label>
+      <input type="radio" name="openMode" value="sidePanel">
+      Side Panel
+    </label>
+    <label>
+      <input type="radio" name="openMode" value="tab">
+      Open in New Tab
+    </label>
+  </div>
+
+  <!-- Split Ratio -->
+  <div class="option-group" id="ratio-group">
+    <div style="margin-bottom: 10px; font-weight: bold;">Split Ratio</div>
+    <div style="font-size: 12px; color: #666; margin-bottom: 5px;">
+        Article Width: <span id="ratio-display">50%</span>
+    </div>
+    <div class="slider-container">
+        <span style="font-size:12px">20%</span>
+        <input type="range" id="splitRatio" min="20" max="80" step="5" value="50">
+        <span style="font-size:12px">80%</span>
+    </div>
+  </div>
+
+  <!-- Search Service -->
+  <div class="option-group">
+    <div style="margin-bottom: 10px; font-weight: bold;">Search Service</div>
+    <select id="serviceProvider">
+      <option value="https://www.google.com/search?q=%s">Google Search (Default)</option>
+      <option value="https://www.google.com/maps/search/?api=1&query=%s">Google Maps</option>
+      <option value="https://translate.google.com/?sl=auto&tl=en&text=%s">Google Translate (Auto -> your language)</option>
+      <option value="https://www.bing.com/search?q=%s">Bing Search</option>
+      <option value="https://duckduckgo.com/?ia=web&q=%s">DuckDuckGo Search</option>
+      <option value="https://finance.yahoo.com/quote/%s">Yahoo Finance</option>
+      <option value="https://felo.ai/search?q=%s">Felo</option>
+      <option value="custom">Custom...</option>
+    </select>
+
+    <div id="custom-url-group">
+        <!-- New Custom Site Addition UI -->
+        <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+            <div style="font-weight: bold; font-size: 13px; margin-bottom: 5px;">Add New Custom Site</div>
+            <input type="text" id="newSiteName" placeholder="Site Name (e.g. My Maps)" style="margin-bottom: 5px;">
+            <input type="text" id="newSiteUrl" placeholder="URL Pattern (use %s for query)" style="margin-bottom: 5px;">
+            <div class="warning" style="margin-bottom: 5px;">
+                URL must contain '%s' as a placeholder for the search query.
+            </div>
+            <button id="addCustomSite" type="button" style="background-color: #34a853; margin-bottom: 15px;">Add to List</button>
+        </div>
+    </div>
+  </div>
+
+  <button id="save">Save Settings</button>
+  <div id="status">Options saved.</div>
+
+  <script src="options.js"></script>
+</body>
+</html>

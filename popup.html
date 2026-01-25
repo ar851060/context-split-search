@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      width: 300px;
+      padding: 15px;
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 0;
+      background-color: #f9f9f9;
+    }
+    h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 16px;
+      color: #333;
+      border-bottom: 1px solid #e0e0e0;
+      padding-bottom: 10px;
+    }
+    .option-group {
+      margin-bottom: 20px;
+    }
+    .label-title {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 8px;
+        color: #444;
+    }
+    label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    input[type="radio"] {
+      margin-right: 8px;
+    }
+    .slider-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: #666;
+    }
+    input[type="range"] {
+        flex-grow: 1;
+        cursor: pointer;
+    }
+    select, input[type="text"] {
+        width: 100%;
+        padding: 6px;
+        margin-top: 4px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+    }
+    select:focus, input:focus {
+        outline: none;
+        border-color: #4285f4;
+    }
+    #custom-url-group {
+        display: none;
+        margin-top: 10px;
+        background: #fff;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+    }
+    .warning {
+        color: #d93025;
+        font-size: 11px;
+        margin-top: 4px;
+        background-color: #fce8e6;
+        padding: 6px;
+        border-radius: 3px;
+    }
+    button#addCustomSite {
+      background-color: #34a853;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      width: 100%;
+      margin-top: 8px;
+    }
+    button#addCustomSite:hover {
+      background-color: #2c8e46;
+    }
+    .footer {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 11px;
+        color: #999;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Search Settings</h2>
+
+  <!-- Open Mode -->
+  <div class="option-group">
+    <div class="label-title">Open Mode</div>
+    <label>
+      <input type="radio" name="openMode" value="split">
+      Split Screen
+    </label>
+    <label>
+      <input type="radio" name="openMode" value="sidePanel">
+      Side Panel
+    </label>
+    <label>
+      <input type="radio" name="openMode" value="tab">
+      Open in New Tab
+    </label>
+  </div>
+
+  <!-- Split Ratio -->
+  <div class="option-group" id="ratio-group">
+    <div class="label-title">Split Ratio <span id="ratio-display" style="font-weight:normal; color:#666;">50%</span></div>
+    <div class="slider-container">
+        <span>20%</span>
+        <input type="range" id="splitRatio" min="20" max="80" step="5" value="50">
+        <span>80%</span>
+    </div>
+  </div>
+
+  <!-- Search Service -->
+  <div class="option-group">
+    <div class="label-title">Search Service</div>
+    <select id="serviceProvider">
+      <option value="https://www.google.com/search?q=%s">Google Search (Default)</option>
+      <option value="https://www.google.com/maps/search/?api=1&query=%s">Google Maps</option>
+      <option value="https://translate.google.com/?sl=auto&tl=en&text=%s">Google Translate (Auto -> your language)</option>
+      <option value="https://www.bing.com/search?q=%s">Bing Search</option>
+      <option value="https://duckduckgo.com/?ia=web&q=%s">DuckDuckGo Search</option>
+      <option value="https://finance.yahoo.com/quote/%s">Yahoo Finance</option>
+      <option value="https://felo.ai/search?q=%s">Felo</option>
+      <option value="custom">Add Custom Site...</option>
+    </select>
+
+    <div id="custom-url-group">
+        <div class="label-title">New Custom Site</div>
+        <input type="text" id="newSiteName" placeholder="Site Name (e.g. My Maps)">
+        <input type="text" id="newSiteUrl" placeholder="URL Pattern">
+        <div class="warning">
+            '%s' represents the query placeholder.
+        </div>
+        <button id="addCustomSite" type="button">Add to List</button>
+    </div>
+  </div>
+  
+  <div id="status" style="text-align:center; font-size:12px; height:15px; color:green;"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
