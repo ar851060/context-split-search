@@ -1,15 +1,29 @@
+// Get user's browser language for Google Translate
+const getUserTranslateLang = () => {
+    const userLang = chrome.i18n.getUILanguage();
+    return userLang.toLowerCase();
+};
+
+// Check if a URL is a Google Translate URL
+const isGoogleTranslateUrl = (url) => {
+    return url && url.includes('translate.google.com');
+};
+
+// Get the user's preferred Google Translate URL
+const getUserGoogleTranslateUrl = () => {
+    const targetLang = getUserTranslateLang();
+    return `https://translate.google.com/?sl=auto&tl=${targetLang}&text=%s`;
+};
+
 // Detect user's browser language and update Google Translate option
 const updateGoogleTranslateOption = () => {
-    const userLang = chrome.i18n.getUILanguage();
-    const targetLang = userLang.toLowerCase();
-    
     const serviceSelect = document.getElementById('serviceProvider');
     const translateOption = Array.from(serviceSelect.options).find(
         opt => opt.textContent.includes('Google Translate')
     );
     
     if (translateOption) {
-        translateOption.value = `https://translate.google.com/?sl=auto&tl=${targetLang}&text=%s`;
+        translateOption.value = getUserGoogleTranslateUrl();
     }
 };
 
@@ -90,7 +104,12 @@ const restoreOptions = () => {
 
         // Set value
         if (items.serviceProvider) {
-            serviceSelect.value = items.serviceProvider;
+            // If saved provider is Google Translate, use the user's language version
+            let providerToSet = items.serviceProvider;
+            if (isGoogleTranslateUrl(providerToSet)) {
+                providerToSet = getUserGoogleTranslateUrl();
+            }
+            serviceSelect.value = providerToSet;
         }
         
         toggleCustomUrl(serviceSelect.value);
