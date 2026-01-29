@@ -1,8 +1,0 @@
-{
-  "appName": {
-    "message": "Context Split Search"
-  },
-  "appDesc": {
-    "message": "タブを切り替えずに検索。右クリックで選択したテキストをサイドパネルや分割画面に即座に表示。"
-  }
-}
