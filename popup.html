@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <style>
     body {
       width: 300px;
@@ -47,7 +48,7 @@
         flex-grow: 1;
         cursor: pointer;
     }
-    select, input[type="text"] {
+    input[type="text"] {
         width: 100%;
         padding: 6px;
         margin-top: 4px;
@@ -56,9 +57,113 @@
         border-radius: 4px;
         font-size: 13px;
     }
-    select:focus, input:focus {
+    input:focus {
         outline: none;
         border-color: #4285f4;
+    }
+    /* Custom Dropdown Styles */
+    .custom-dropdown {
+        position: relative;
+        width: 100%;
+        margin-top: 4px;
+    }
+    .dropdown-selected {
+        padding: 6px 28px 6px 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: #fff;
+        cursor: pointer;
+        font-size: 13px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        position: relative;
+    }
+    .dropdown-selected:hover {
+        border-color: #bbb;
+    }
+    .dropdown-selected::after {
+        content: '▼';
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 10px;
+        color: #666;
+        pointer-events: none;
+    }
+    .dropdown-selected.open::after {
+        content: '▲';
+    }
+    .dropdown-options {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 4px 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 100;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .dropdown-options.show {
+        display: block;
+    }
+    .dropdown-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        cursor: pointer;
+        font-size: 13px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .dropdown-option:last-child {
+        border-bottom: none;
+    }
+    .dropdown-option:hover {
+        background-color: #f5f5f5;
+    }
+    .dropdown-option.selected {
+        background-color: #e8f0fe;
+    }
+    .dropdown-option .option-text {
+        flex-grow: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .dropdown-option .delete-btn {
+        background: none;
+        border: none;
+        color: #999;
+        font-size: 11px;
+        cursor: pointer;
+        padding: 2px 6px;
+        line-height: 1;
+        margin-left: 8px;
+        border-radius: 4px;
+        width: auto;
+        height: auto;
+        display: inline-block;
+    }
+    .dropdown-option .delete-btn:hover {
+        background-color: #ffebee;
+        color: #d93025;
+        text-decoration: underline;
+    }
+
+    .dropdown-separator {
+        padding: 4px 10px;
+        font-size: 11px;
+        color: #888;
+        background: #f8f8f8;
+        border-bottom: 1px solid #eee;
+        font-weight: 600;
     }
     #custom-url-group {
         display: none;
@@ -132,23 +237,22 @@
   <!-- Search Service -->
   <div class="option-group">
     <div class="label-title">Search Service</div>
-    <select id="serviceProvider">
-      <option value="https://www.google.com/search?q=%s">Google Search (Default)</option>
-      <option value="https://www.google.com/maps/search/?api=1&query=%s">Google Maps</option>
-      <option value="https://translate.google.com/?sl=auto&tl=en&text=%s">Google Translate (Auto -> your language)</option>
-      <option value="https://www.bing.com/search?q=%s">Bing Search</option>
-      <option value="https://duckduckgo.com/?ia=web&q=%s">DuckDuckGo Search</option>
-      <option value="https://finance.yahoo.com/quote/%s">Yahoo Finance</option>
-      <option value="https://felo.ai/search?q=%s">Felo</option>
-      <option value="custom">Add Custom Site...</option>
-    </select>
+    <!-- Custom Dropdown with delete support -->
+    <div class="custom-dropdown" id="serviceDropdown">
+      <div class="dropdown-selected" id="dropdownSelected">Google Search (Default)</div>
+      <div class="dropdown-options" id="dropdownOptions">
+        <!-- Options will be populated by JavaScript -->
+      </div>
+    </div>
+    <!-- Hidden input to store selected value -->
+    <input type="hidden" id="serviceProvider" value="https://www.google.com/search?q=%s">
 
     <div id="custom-url-group">
         <div class="label-title">New Custom Site</div>
         <input type="text" id="newSiteName" placeholder="Site Name (e.g. My Maps)">
         <input type="text" id="newSiteUrl" placeholder="URL Pattern">
-        <div class="warning">
-            '%s' represents the query placeholder.
+        <div class="warning" style="background-color: #f0f0f0; color: #555;">
+            Tip: Use '%s' as the query placeholder.
         </div>
         <button id="addCustomSite" type="button">Add to List</button>
     </div>

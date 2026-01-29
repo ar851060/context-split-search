@@ -108,6 +108,9 @@ const saveOptions = () => {
                 option.textContent = site.name;
                 serviceSelect.appendChild(option);
             });
+            
+            // Render custom sites list for management
+            renderCustomSitesList(items.customSites);
         }
 
         // Select the saved value
@@ -135,8 +138,8 @@ const saveOptions = () => {
           alert('Please enter a site name.');
           return;
       }
-      if (!url || !url.includes('%s')) {
-          alert('Please enter a valid URL containing "%s".');
+      if (!url) {
+          alert('Please enter a valid URL.');
           return;
       }
 
@@ -152,6 +155,66 @@ const saveOptions = () => {
               setTimeout(() => {
                   location.reload();
               }, 1000);
+          });
+      });
+  };
+
+  // Render custom sites list with delete buttons
+  const renderCustomSitesList = (sites) => {
+      const listContainer = document.getElementById('custom-sites-list');
+      if (!listContainer) return;
+      
+      listContainer.innerHTML = '';
+      
+      if (sites.length === 0) return;
+      
+      const title = document.createElement('div');
+      title.className = 'section-title';
+      title.textContent = 'Manage Custom Sites';
+      listContainer.appendChild(title);
+      
+      sites.forEach((site, index) => {
+          const item = document.createElement('div');
+          item.className = 'custom-site-item';
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'site-name';
+          nameSpan.textContent = site.name;
+          nameSpan.title = site.url;
+          
+          const deleteBtn = document.createElement('button');
+          deleteBtn.className = 'delete-site-btn';
+          deleteBtn.textContent = 'Delete';
+          deleteBtn.type = 'button';
+          deleteBtn.addEventListener('click', () => deleteCustomSite(index));
+          
+          item.appendChild(nameSpan);
+          item.appendChild(deleteBtn);
+          listContainer.appendChild(item);
+      });
+  };
+
+  // Delete a custom site by index
+  const deleteCustomSite = (index) => {
+      chrome.storage.sync.get({ customSites: [], serviceProvider: '' }, (items) => {
+          const sites = items.customSites;
+          const deletedSite = sites[index];
+          
+          // Remove the site
+          sites.splice(index, 1);
+          
+          // If the deleted site was the current provider, reset to default
+          const settings = { customSites: sites };
+          if (deletedSite && items.serviceProvider === deletedSite.url) {
+              settings.serviceProvider = 'https://www.google.com/search?q=%s';
+          }
+          
+          chrome.storage.sync.set(settings, () => {
+              const status = document.getElementById('status');
+              status.textContent = "Site deleted! Page reloading...";
+              status.style.opacity = '1';
+              // Reload to refresh the dropdown
+              setTimeout(() => location.reload(), 500);
           });
       });
   };

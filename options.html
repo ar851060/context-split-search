@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Extension Options</title>
   <style>
     body {
@@ -74,6 +75,46 @@
     button:hover {
       background-color: #357ae8;
     }
+    .custom-site-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: #f8f8f8;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      margin-bottom: 5px;
+      font-size: 13px;
+    }
+    .custom-site-item .site-name {
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .delete-site-btn {
+      background-color: #d93025;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-left: 10px;
+      width: auto;
+    }
+    .delete-site-btn:hover {
+      background-color: #b71c1c;
+    }
+    #custom-sites-list {
+      margin-top: 15px;
+    }
+    .section-title {
+      font-weight: bold;
+      font-size: 13px;
+      margin-bottom: 8px;
+      color: #444;
+    }
   </style>
 </head>
 <body>
@@ -117,9 +158,6 @@
       <option value="https://www.google.com/search?q=%s">Google Search (Default)</option>
       <option value="https://www.google.com/maps/search/?api=1&query=%s">Google Maps</option>
       <option value="https://translate.google.com/?sl=auto&tl=en&text=%s">Google Translate (Auto -> your language)</option>
-      <option value="https://www.bing.com/search?q=%s">Bing Search</option>
-      <option value="https://duckduckgo.com/?ia=web&q=%s">DuckDuckGo Search</option>
-      <option value="https://finance.yahoo.com/quote/%s">Yahoo Finance</option>
       <option value="https://felo.ai/search?q=%s">Felo</option>
       <option value="custom">Custom...</option>
     </select>
@@ -130,11 +168,14 @@
             <div style="font-weight: bold; font-size: 13px; margin-bottom: 5px;">Add New Custom Site</div>
             <input type="text" id="newSiteName" placeholder="Site Name (e.g. My Maps)" style="margin-bottom: 5px;">
             <input type="text" id="newSiteUrl" placeholder="URL Pattern (use %s for query)" style="margin-bottom: 5px;">
-            <div class="warning" style="margin-bottom: 5px;">
-                URL must contain '%s' as a placeholder for the search query.
+            <div class="warning" style="margin-bottom: 5px; background-color: #f0f0f0; color: #555;">
+                Tip: Use '%s' as placeholder for the search query.
             </div>
             <button id="addCustomSite" type="button" style="background-color: #34a853; margin-bottom: 15px;">Add to List</button>
         </div>
+        
+        <!-- Custom Sites List for Management -->
+        <div id="custom-sites-list"></div>
     </div>
   </div>
 

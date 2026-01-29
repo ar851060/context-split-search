@@ -15,16 +15,159 @@ const getUserGoogleTranslateUrl = () => {
     return `https://translate.google.com/?sl=auto&tl=${targetLang}&text=%s`;
 };
 
-// Detect user's browser language and update Google Translate option
-const updateGoogleTranslateOption = () => {
-    const serviceSelect = document.getElementById('serviceProvider');
-    const translateOption = Array.from(serviceSelect.options).find(
-        opt => opt.textContent.includes('Google Translate')
-    );
+// Default options for the dropdown
+const defaultOptions = [
+    { value: 'https://www.google.com/search?q=%s', text: 'Google Search (Default)', isCustom: false },
+    { value: 'https://www.google.com/maps/search/?api=1&query=%s', text: 'Google Maps', isCustom: false },
+    { value: 'https://translate.google.com/?sl=auto&tl=en&text=%s', text: 'Google Translate (Auto -> your language)', isCustom: false },
+    { value: 'https://felo.ai/search?q=%s', text: 'Felo', isCustom: false },
+    { value: 'custom', text: '+ Add Custom Site...', isCustom: false }
+];
+
+// Build and render the custom dropdown
+const buildDropdown = (customSites, selectedValue) => {
+    const optionsContainer = document.getElementById('dropdownOptions');
+    const selectedDisplay = document.getElementById('dropdownSelected');
+    const hiddenInput = document.getElementById('serviceProvider');
     
-    if (translateOption) {
-        translateOption.value = getUserGoogleTranslateUrl();
+    // Ensure customSites is always an array
+    const sites = customSites || [];
+    
+    optionsContainer.innerHTML = '';
+    
+    // Update Google Translate URL with user's language
+    const options = defaultOptions.map(opt => {
+        if (opt.text.includes('Google Translate')) {
+            return { ...opt, value: getUserGoogleTranslateUrl() };
+        }
+        return opt;
+    });
+    
+    // Add default options
+    options.forEach(opt => {
+        const optionEl = createDropdownOption(opt.value, opt.text, false, null);
+        optionsContainer.appendChild(optionEl);
+    });
+    
+    // Add custom sites if any
+    if (sites.length > 0) {
+        // Add separator before custom sites
+        const separator = document.createElement('div');
+        separator.className = 'dropdown-separator';
+        separator.textContent = 'Custom Sites';
+        
+        // Insert separator before the last option (Add Custom Site...)
+        const lastOption = optionsContainer.lastChild;
+        optionsContainer.insertBefore(separator, lastOption);
+        
+        // Add custom site options
+        sites.forEach((site, index) => {
+            const optionEl = createDropdownOption(site.url, site.name, true, index);
+            optionsContainer.insertBefore(optionEl, lastOption);
+        });
     }
+    
+    // Set selected value
+    let displayText = 'Google Search (Default)';
+    let providerToSet = selectedValue || 'https://www.google.com/search?q=%s';
+    
+    // If Google Translate, use user's language version
+    if (isGoogleTranslateUrl(selectedValue)) {
+        providerToSet = getUserGoogleTranslateUrl();
+    }
+    
+    // Find matching option text
+    const allOptions = options.slice(); // Create a copy
+    sites.forEach(site => {
+        allOptions.push({ value: site.url, text: site.name, isCustom: true });
+    });
+    
+    const matchingOption = allOptions.find(opt => opt.value === providerToSet);
+    if (matchingOption) {
+        displayText = matchingOption.text;
+    }
+    
+    selectedDisplay.textContent = displayText;
+    hiddenInput.value = providerToSet;
+    
+    // Mark selected option
+    updateSelectedOption(providerToSet);
+};
+
+// Create a dropdown option element
+const createDropdownOption = (value, text, isCustom, customIndex) => {
+    const optionEl = document.createElement('div');
+    optionEl.className = 'dropdown-option';
+    optionEl.dataset.value = value;
+    
+    const textSpan = document.createElement('span');
+    textSpan.className = 'option-text';
+    textSpan.textContent = text;
+    optionEl.appendChild(textSpan);
+    
+    // Add delete button for custom sites
+    if (isCustom && customIndex !== null) {
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '❌';
+        deleteBtn.title = 'Remove this site';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent option selection
+            deleteCustomSite(customIndex);
+        });
+        optionEl.appendChild(deleteBtn);
+    }
+    
+    // Click to select option
+    optionEl.addEventListener('click', () => {
+        selectOption(value, text);
+    });
+    
+    return optionEl;
+};
+
+// Select an option
+const selectOption = (value, text) => {
+    const selectedDisplay = document.getElementById('dropdownSelected');
+    const hiddenInput = document.getElementById('serviceProvider');
+    const optionsContainer = document.getElementById('dropdownOptions');
+    
+    selectedDisplay.textContent = text;
+    hiddenInput.value = value;
+    
+    // Close dropdown
+    optionsContainer.classList.remove('show');
+    selectedDisplay.classList.remove('open');
+    
+    // Update selected state
+    updateSelectedOption(value);
+    
+    // Toggle custom URL group
+    toggleCustomUrl(value);
+    
+    // Save options
+    saveOptions();
+};
+
+// Update visual selected state
+const updateSelectedOption = (value) => {
+    const options = document.querySelectorAll('.dropdown-option');
+    options.forEach(opt => {
+        if (opt.dataset.value === value) {
+            opt.classList.add('selected');
+        } else {
+            opt.classList.remove('selected');
+        }
+    });
+};
+
+// Toggle dropdown open/close
+const toggleDropdown = () => {
+    const optionsContainer = document.getElementById('dropdownOptions');
+    const selectedDisplay = document.getElementById('dropdownSelected');
+    
+    optionsContainer.classList.toggle('show');
+    selectedDisplay.classList.toggle('open');
 };
 
 // Saves options systematically on any change
@@ -32,13 +175,6 @@ const saveOptions = () => {
     const openMode = document.querySelector('input[name="openMode"]:checked').value;
     const splitRatio = document.getElementById('splitRatio').value;
     const serviceProvider = document.getElementById('serviceProvider').value;
-    
-    // Ignore 'custom' value for saving if it's currently selected (user is adding new one)
-    // We only save valid URLs. If "Add Custom Site..." is selected, we don't overwrite the valid saved provider 
-    // UNLESS we want to force them to pick one. 
-    // Actually, let's allow saving, but if it is 'custom', we might handle it differently?
-    // For now, let's just save. If they leave it on 'Add Custom Site...', the background script treats it as void or default.
-    // Better: If 'custom', don't save serviceProvider yet.
     
     const settings = {
         openMode: openMode,
@@ -83,41 +219,39 @@ const restoreOptions = () => {
         ratioSlider.value = items.splitRatio;
         updateRatioDisplay(items.splitRatio);
 
-        // Populate Service Provider
-        const serviceSelect = document.getElementById('serviceProvider');
+        // Build and populate custom dropdown
+        buildDropdown(items.customSites, items.serviceProvider);
         
-        if (items.customSites && items.customSites.length > 0) {
-            const separator = document.createElement('option');
-            separator.disabled = true;
-            separator.textContent = '--- User Added ---';
-            // Insert before the last option (which is "Add Custom Site...")
-            const lastOption = serviceSelect.lastElementChild;
-            serviceSelect.insertBefore(separator, lastOption);
-
-            items.customSites.forEach(site => {
-                const option = document.createElement('option');
-                option.value = site.url;
-                option.textContent = site.name;
-                serviceSelect.insertBefore(option, lastOption);
-            });
-        }
-
-        // Set value
-        if (items.serviceProvider) {
-            // If saved provider is Google Translate, use the user's language version
-            let providerToSet = items.serviceProvider;
-            if (isGoogleTranslateUrl(providerToSet)) {
-                providerToSet = getUserGoogleTranslateUrl();
-            }
-            serviceSelect.value = providerToSet;
-        }
-        
-        toggleCustomUrl(serviceSelect.value);
+        // Toggle custom URL group visibility
+        toggleCustomUrl(items.serviceProvider);
         
         // Set initial visibility of ratio section based on saved mode
         toggleRatioVisibility(items.openMode);
       }
     );
+};
+
+// Delete a custom site by index
+const deleteCustomSite = (index) => {
+    chrome.storage.sync.get({ customSites: [], serviceProvider: '' }, (items) => {
+        const sites = items.customSites;
+        const deletedSite = sites[index];
+        
+        // Remove the site
+        sites.splice(index, 1);
+        
+        // If the deleted site was the current provider, reset to default
+        const settings = { customSites: sites };
+        if (deletedSite && items.serviceProvider === deletedSite.url) {
+            settings.serviceProvider = 'https://www.google.com/search?q=%s';
+        }
+        
+        chrome.storage.sync.set(settings, () => {
+            showStatus('Site deleted', 'green');
+            // Reload to refresh the dropdown
+            setTimeout(() => location.reload(), 500);
+        });
+    });
 };
 
 const addCustomSite = () => {
@@ -128,8 +262,8 @@ const addCustomSite = () => {
         showStatus('Enter a site name', 'red');
         return;
     }
-    if (!url || !url.includes('%s')) {
-        showStatus('URL needs "%s"', 'red');
+    if (!url) {
+        showStatus('Enter a URL', 'red');
         return;
     }
 
@@ -171,8 +305,19 @@ const showStatus = (msg, color='green') => {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateGoogleTranslateOption();
     restoreOptions();
+    
+    // Custom dropdown toggle
+    document.getElementById('dropdownSelected').addEventListener('click', toggleDropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        const dropdown = document.getElementById('serviceDropdown');
+        if (!dropdown.contains(e.target)) {
+            document.getElementById('dropdownOptions').classList.remove('show');
+            document.getElementById('dropdownSelected').classList.remove('open');
+        }
+    });
     
     // Event Listeners
     document.querySelectorAll('input[name="openMode"]').forEach(radio => {
@@ -181,11 +326,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     document.getElementById('splitRatio').addEventListener('input', (e) => {
         updateRatioDisplay(e.target.value);
-        saveOptions();
-    });
-
-    document.getElementById('serviceProvider').addEventListener('change', (e) => {
-        toggleCustomUrl(e.target.value);
         saveOptions();
     });
     
