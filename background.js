@@ -56,7 +56,8 @@ async function updateDynamicRules() {
             'https://www.bing.com/search?q=%s',
             'https://duckduckgo.com/?ia=web&q=%s',
             'https://finance.yahoo.com/quote/%s',
-            'https://felo.ai/search?q=%s'
+            'https://felo.ai/search?q=%s',
+            'https://www.perplexity.ai/?q=%s'
         ];
 
         // Collect all domains that need rules
@@ -127,6 +128,52 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 });
 
 // ============================================
+// Language Detection for AI Search Engines
+// ============================================
+
+// Map browser language codes to human-readable language names
+function getLanguageName(langCode) {
+    const langMap = {
+        'zh-tw': '繁體中文',
+        'zh-hk': '繁體中文',
+        'zh-cn': '簡體中文',
+        'zh': '中文',
+        'en': 'English',
+        'en-us': 'English',
+        'en-gb': 'English',
+        'ja': '日本語',
+        'ko': '한국어',
+        'fr': 'Français',
+        'de': 'Deutsch',
+        'es': 'Español',
+        'pt': 'Português',
+        'it': 'Italiano',
+        'ru': 'Русский',
+        'ar': 'العربية',
+        'th': 'ภาษาไทย',
+        'vi': 'Tiếng Việt',
+        'id': 'Bahasa Indonesia',
+        'ms': 'Bahasa Melayu',
+        'nl': 'Nederlands',
+        'pl': 'Polski',
+        'tr': 'Türkçe',
+        'uk': 'Українська',
+        'sv': 'Svenska',
+        'da': 'Dansk',
+        'fi': 'Suomi',
+        'no': 'Norsk',
+        'hi': 'हिन्दी'
+    };
+    const code = langCode.toLowerCase();
+    return langMap[code] || langMap[code.split('-')[0]] || langCode;
+}
+
+// Check if a URL pattern is for Felo or Perplexity
+function isAISearchEngine(urlPattern) {
+    return urlPattern.includes('felo.ai') || urlPattern.includes('perplexity.ai');
+}
+
+// ============================================
 // Context Menu and Main Logic
 // ============================================
 
@@ -146,7 +193,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === "search-in-google-maps" && info.selectionText) {
-      const query = encodeURIComponent(info.selectionText);
+      let searchText = info.selectionText;
       
       // Use .get() with callback to stay synchronous in user gesture context
       chrome.storage.sync.get({ 
@@ -164,6 +211,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         if (!targetUrlPattern) {
             targetUrlPattern = 'https://www.google.com/maps/search/?api=1&query=%s';
         }
+
+        // For Felo and Perplexity, append language instruction
+        if (isAISearchEngine(targetUrlPattern)) {
+            const browserLang = chrome.i18n.getUILanguage();
+            const langName = getLanguageName(browserLang);
+            searchText = searchText + ` 請用${langName}來回答`;
+        }
+
+        const query = encodeURIComponent(searchText);
 
         let finalUrl;
         if (targetUrlPattern.includes('%s')) {

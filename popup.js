@@ -21,6 +21,7 @@ const defaultOptions = [
     { value: 'https://www.google.com/maps/search/?api=1&query=%s', text: 'Google Maps', isCustom: false },
     { value: 'https://translate.google.com/?sl=auto&tl=en&text=%s', text: 'Google Translate (Auto -> your language)', isCustom: false },
     { value: 'https://felo.ai/search?q=%s', text: 'Felo', isCustom: false },
+    { value: 'https://www.perplexity.ai/?q=%s', text: 'Perplexity', isCustom: false },  
     { value: 'custom', text: '+ Add Custom Site...', isCustom: false }
 ];
 
