@@ -216,7 +216,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         if (isAISearchEngine(targetUrlPattern)) {
             const browserLang = chrome.i18n.getUILanguage();
             const langName = getLanguageName(browserLang);
-            searchText = searchText + ` 請用${langName}來回答`;
+            searchText = searchText + ` please answer in ${langName}`;
         }
 
         const query = encodeURIComponent(searchText);
