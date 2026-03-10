@@ -15,6 +15,23 @@ const getUserGoogleTranslateUrl = () => {
     return `https://translate.google.com/?sl=auto&tl=${targetLang}&text=%s`;
 };
 
+// Get user's browser language for Wikipedia
+const getUserWikipediaLang = () => {
+    const userLang = chrome.i18n.getUILanguage();
+    return userLang.split('-')[0].toLowerCase();
+};
+
+// Check if a URL is a Wikipedia URL
+const isWikipediaUrl = (url) => {
+    return url && url.includes('.wikipedia.org/wiki/');
+};
+
+// Get the user's preferred Wikipedia URL
+const getUserWikipediaUrl = () => {
+    const targetLang = getUserWikipediaLang();
+    return `https://${targetLang}.wikipedia.org/wiki/%s`;
+};
+
 // Detect user's browser language and update Google Translate option
 const updateGoogleTranslateOption = () => {
     const serviceSelect = document.getElementById('serviceProvider');
@@ -25,6 +42,19 @@ const updateGoogleTranslateOption = () => {
     if (translateOption) {
         translateOption.value = getUserGoogleTranslateUrl();
         console.log('Updated Google Translate to target language:', getUserTranslateLang());
+    }
+};
+
+// Detect user's browser language and update Wikipedia option
+const updateWikipediaOption = () => {
+    const serviceSelect = document.getElementById('serviceProvider');
+    const wikiOption = Array.from(serviceSelect.options).find(
+        opt => opt.textContent.includes('Wikipedia')
+    );
+    
+    if (wikiOption) {
+        wikiOption.value = getUserWikipediaUrl();
+        console.log('Updated Wikipedia to target language:', getUserWikipediaLang());
     }
 };
 
@@ -114,10 +144,12 @@ const saveOptions = () => {
         }
 
         // Select the saved value
-        // If saved provider is Google Translate, use the user's language version
+        // If saved provider is Google Translate or Wikipedia, use the user's language version
         let providerToSet = items.serviceProvider;
         if (isGoogleTranslateUrl(providerToSet)) {
             providerToSet = getUserGoogleTranslateUrl();
+        } else if (isWikipediaUrl(providerToSet)) {
+            providerToSet = getUserWikipediaUrl();
         }
         serviceSelect.value = providerToSet;
         
@@ -258,6 +290,7 @@ const saveOptions = () => {
   
   document.addEventListener('DOMContentLoaded', () => {
       updateGoogleTranslateOption(); // Update translate language first
+      updateWikipediaOption(); // Update Wikipedia language
       restoreOptions(); // Then restore saved settings
   });
   document.getElementById('save').addEventListener('click', saveOptions);

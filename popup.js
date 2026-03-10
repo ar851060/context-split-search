@@ -15,11 +15,29 @@ const getUserGoogleTranslateUrl = () => {
     return `https://translate.google.com/?sl=auto&tl=${targetLang}&text=%s`;
 };
 
+// Get user's browser language for Wikipedia
+const getUserWikipediaLang = () => {
+    const userLang = chrome.i18n.getUILanguage();
+    return userLang.split('-')[0].toLowerCase();
+};
+
+// Check if a URL is a Wikipedia URL
+const isWikipediaUrl = (url) => {
+    return url && url.includes('.wikipedia.org/wiki/');
+};
+
+// Get the user's preferred Wikipedia URL
+const getUserWikipediaUrl = () => {
+    const targetLang = getUserWikipediaLang();
+    return `https://${targetLang}.wikipedia.org/wiki/%s`;
+};
+
 // Default options for the dropdown
 const defaultOptions = [
     { value: 'https://www.google.com/search?q=%s', text: 'Google Search (Default)', isCustom: false },
     { value: 'https://www.google.com/maps/search/?api=1&query=%s', text: 'Google Maps', isCustom: false },
     { value: 'https://translate.google.com/?sl=auto&tl=en&text=%s', text: 'Google Translate (Auto -> your language)', isCustom: false },
+    { value: 'https://en.wikipedia.org/wiki/%s', text: 'Wikipedia', isCustom: false },
     { value: 'https://felo.ai/search?q=%s', text: 'Felo', isCustom: false },
     { value: 'https://www.perplexity.ai/?q=%s', text: 'Perplexity', isCustom: false },  
     { value: 'custom', text: '+ Add Custom Site...', isCustom: false }
@@ -40,6 +58,9 @@ const buildDropdown = (customSites, selectedValue) => {
     const options = defaultOptions.map(opt => {
         if (opt.text.includes('Google Translate')) {
             return { ...opt, value: getUserGoogleTranslateUrl() };
+        }
+        if (opt.text.includes('Wikipedia')) {
+            return { ...opt, value: getUserWikipediaUrl(), text: `Wikipedia (${getUserWikipediaLang().toUpperCase()})` };
         }
         return opt;
     });
@@ -75,6 +96,8 @@ const buildDropdown = (customSites, selectedValue) => {
     // If Google Translate, use user's language version
     if (isGoogleTranslateUrl(selectedValue)) {
         providerToSet = getUserGoogleTranslateUrl();
+    } else if (isWikipediaUrl(selectedValue)) {
+        providerToSet = getUserWikipediaUrl();
     }
     
     // Find matching option text

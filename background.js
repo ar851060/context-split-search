@@ -53,6 +53,7 @@ async function updateDynamicRules() {
             'https://www.google.com/search?q=%s',
             'https://www.google.com/maps/search/?api=1&query=%s',
             'https://translate.google.com/?sl=auto&tl=en&text=%s',
+            'https://en.wikipedia.org/wiki/%s',
             'https://www.bing.com/search?q=%s',
             'https://duckduckgo.com/?ia=web&q=%s',
             'https://finance.yahoo.com/quote/%s',
